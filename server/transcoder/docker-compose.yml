@@ -1,0 +1,13 @@
+services:
+  nuvio-transcoder:
+    build: .
+    container_name: nuvio-transcoder
+    restart: unless-stopped
+    ports:
+      - "8099:8099"
+    environment:
+      NUVIO_TRANSCODER_TOKEN: "${NUVIO_TRANSCODER_TOKEN}"
+    devices:
+      - /dev/dri:/dev/dri
+    security_opt:
+      - no-new-privileges:true
