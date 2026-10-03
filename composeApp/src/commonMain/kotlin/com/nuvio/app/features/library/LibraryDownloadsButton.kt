@@ -5,11 +5,17 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,6 +28,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.core.ui.accentBrush
 import com.nuvio.app.core.ui.gradientMask
@@ -31,6 +41,10 @@ import com.nuvio.app.features.downloads.DownloadStatus
 import com.nuvio.app.features.downloads.DownloadsRepository
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.compose_settings_root_downloads_title
+import nuvio.composeapp.generated.resources.downloads_live_completed
+import nuvio.composeapp.generated.resources.downloads_status_downloading
+import nuvio.composeapp.generated.resources.downloads_status_failed
+import nuvio.composeapp.generated.resources.downloads_status_paused
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -41,15 +55,50 @@ internal fun LibraryDownloadsButton(onClick: () -> Unit) {
     }.collectAsStateWithLifecycle()
     val hasUnseenCompleted by DownloadsRepository.hasUnseenCompleted.collectAsStateWithLifecycle()
 
-    IconButton(onClick = onClick) {
-        when {
-            downloads.items.any { it.status == DownloadStatus.Downloading } -> FlowingDownloadIcon()
-            hasUnseenCompleted -> DownloadIcon(
-                modifier = Modifier.gradientMask(MaterialTheme.themePalette.accentBrush()),
-                tint = Color.White,
-            )
-            else -> DownloadIcon(tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    val activeCount = downloads.items.count {
+        it.status == DownloadStatus.Downloading || it.status == DownloadStatus.Paused
+    }
+    val hasFailed = downloads.items.any { it.status == DownloadStatus.Failed }
+    val hasDownloading = downloads.items.any { it.status == DownloadStatus.Downloading }
+    val statusDescription = when {
+        hasDownloading -> stringResource(Res.string.downloads_status_downloading, activeCount.toString())
+        activeCount > 0 -> stringResource(Res.string.downloads_status_paused, activeCount.toString())
+        hasFailed -> stringResource(Res.string.downloads_status_failed)
+        hasUnseenCompleted -> stringResource(Res.string.downloads_live_completed)
+        else -> ""
+    }
+
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier.semantics { stateDescription = statusDescription },
+    ) {
+        BadgedBox(
+            badge = {
+                when {
+                    activeCount > 0 -> Badge {
+                        Text(if (activeCount > 99) "99+" else activeCount.toString())
+                    }
+                    hasFailed -> Badge { Text("!") }
+                    hasUnseenCompleted -> Badge()
+                }
+            },
+        ) {
+            when {
+                hasDownloading -> FlowingDownloadIcon()
+                hasUnseenCompleted -> DownloadIcon(
+                    modifier = Modifier.gradientMask(MaterialTheme.themePalette.accentBrush()),
+                    tint = Color.White,
+                )
+                else -> DownloadIcon(tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = stringResource(Res.string.compose_settings_root_downloads_title),
+            modifier = Modifier.widthIn(max = 84.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -92,7 +141,7 @@ private fun DownloadIcon(
 ) {
     Icon(
         imageVector = Icons.Rounded.Download,
-        contentDescription = stringResource(Res.string.compose_settings_root_downloads_title),
+        contentDescription = null,
         modifier = modifier,
         tint = tint,
     )

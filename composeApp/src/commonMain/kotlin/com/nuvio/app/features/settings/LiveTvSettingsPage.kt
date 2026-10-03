@@ -42,8 +42,6 @@ import nuvio.composeapp.generated.resources.live_tv_settings_cancel_edit
 import nuvio.composeapp.generated.resources.live_tv_settings_configured_playlists
 import nuvio.composeapp.generated.resources.live_tv_settings_description
 import nuvio.composeapp.generated.resources.live_tv_settings_edit_playlist
-import nuvio.composeapp.generated.resources.live_tv_settings_navigation_description
-import nuvio.composeapp.generated.resources.live_tv_settings_navigation_title
 import nuvio.composeapp.generated.resources.live_tv_settings_no_playlists
 import nuvio.composeapp.generated.resources.live_tv_settings_pick_file_failed
 import nuvio.composeapp.generated.resources.live_tv_settings_playlist_disabled
@@ -57,7 +55,6 @@ import nuvio.composeapp.generated.resources.live_tv_settings_playlist_type_local
 import nuvio.composeapp.generated.resources.live_tv_settings_playlist_type_url
 import nuvio.composeapp.generated.resources.live_tv_settings_playlist_url_label
 import nuvio.composeapp.generated.resources.live_tv_settings_save_playlist
-import nuvio.composeapp.generated.resources.live_tv_settings_section_navigation
 import nuvio.composeapp.generated.resources.live_tv_settings_section_playlist
 import nuvio.composeapp.generated.resources.live_tv_settings_section_providers
 import nuvio.composeapp.generated.resources.live_tv_connect
@@ -77,23 +74,6 @@ internal fun LazyListScope.liveTvSettingsContent(
     isTablet: Boolean,
     uiState: LiveTvUiState,
 ) {
-    if (uiState.hasPlaylist) {
-        item {
-            SettingsSection(
-                title = stringResource(Res.string.live_tv_settings_section_navigation),
-                isTablet = isTablet,
-            ) {
-                SettingsGroup(isTablet = isTablet) {
-                    LiveTvNavigationVisibilityRow(
-                        isTablet = isTablet,
-                        enabled = uiState.isNavigationEnabled,
-                        onEnabledChanged = LiveTvRepository::setNavigationEnabled,
-                    )
-                }
-            }
-        }
-    }
-
     item {
         SettingsSection(
             title = stringResource(Res.string.live_tv_settings_section_providers),
@@ -164,45 +144,6 @@ private fun LiveTvProviderSettingsRow(isTablet: Boolean, uiState: LiveTvUiState)
             ) { Text(stringResource(Res.string.live_tv_connect)) }
             if (uiState.stalkerSettings.isConfigured) OutlinedButton(onClick = LiveTvRepository::removeStalker) { Text(stringResource(Res.string.live_tv_disconnect)) }
         }
-    }
-}
-
-@Composable
-private fun LiveTvNavigationVisibilityRow(
-    isTablet: Boolean,
-    enabled: Boolean,
-    onEnabledChanged: (Boolean) -> Unit,
-) {
-    val horizontalPadding = if (isTablet) 20.dp else 16.dp
-    val verticalPadding = if (isTablet) 16.dp else 14.dp
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = horizontalPadding, vertical = verticalPadding),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(
-                text = stringResource(Res.string.live_tv_settings_navigation_title),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium,
-            )
-            Text(
-                text = stringResource(Res.string.live_tv_settings_navigation_description),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(
-            checked = enabled,
-            onCheckedChange = onEnabledChanged,
-        )
     }
 }
 

@@ -1431,7 +1431,7 @@ internal fun MainAppContent(
                         logo = playableChannel.logoUrl,
                         streamTitle = playableChannel.name,
                         streamSubtitle = playableChannel.group,
-                        providerName = "Live TV",
+                        providerName = "IPTV",
                         providerAddonId = "live-tv",
                         contentType = "live",
                         videoId = playableChannel.id,

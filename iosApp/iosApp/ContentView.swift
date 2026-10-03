@@ -327,7 +327,7 @@ enum NuvioAppTab: String, CaseIterable, Hashable {
     var fallbackTitle: String {
         switch self {
         case .liveTv:
-            return "Live TV"
+            return "IPTV"
         default:
             return String(localized: String.LocalizationValue(rawValue))
         }
@@ -853,7 +853,7 @@ final class AppNavigationCoordinator: ObservableObject {
     }
     @Published private(set) var tabBarBehavior: NuvioTabBarBehavior = NuvioTabBarBehavior.current()
     @Published private(set) var isSelectedTabAtRoot = true
-    @Published private(set) var isLiveTvTabVisible = false
+    @Published private(set) var isLiveTvTabVisible = true
     @Published private var localizedTabTitles: [NuvioAppTab: String] = [:]
     @Published private(set) var localizedSwitchProfileTitle = ""
     @Published private(set) var localizedAddProfileTitle = ""
@@ -995,7 +995,7 @@ final class AppNavigationCoordinator: ObservableObject {
     }
 
     func reloadLiveTvTabVisibility() {
-        let visible = UserDefaults.standard.bool(forKey: Self.liveTvTabVisibleKey)
+        let visible = true // IPTV is a permanent destination in this fork.
         guard isLiveTvTabVisible != visible else { return }
         if !visible && selectedTab == .liveTv {
             selectedTab = .home

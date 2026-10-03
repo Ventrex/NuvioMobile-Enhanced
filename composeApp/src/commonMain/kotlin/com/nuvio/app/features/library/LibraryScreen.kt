@@ -410,19 +410,30 @@ fun LibraryScreen(
             androidx.compose.foundation.layout.Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                NuvioScreenHeader(
-                    title = if (sourceMode == LibraryViewMode.Cloud) {
-                        stringResource(Res.string.library_title)
-                    } else {
-                        when (uiState.sourceMode) {
-                            LibrarySourceMode.LOCAL -> stringResource(Res.string.library_title)
-                            LibrarySourceMode.TRAKT -> stringResource(Res.string.library_trakt_title)
-                            LibrarySourceMode.SIMKL -> stringResource(Res.string.library_simkl_title)
-                            LibrarySourceMode.MDBLIST -> stringResource(Res.string.library_mdblist_title)
+                Box(Modifier.fillMaxWidth()) {
+                    NuvioScreenHeader(
+                        title = if (sourceMode == LibraryViewMode.Cloud) {
+                            stringResource(Res.string.library_title)
+                        } else {
+                            when (uiState.sourceMode) {
+                                LibrarySourceMode.LOCAL -> stringResource(Res.string.library_title)
+                                LibrarySourceMode.TRAKT -> stringResource(Res.string.library_trakt_title)
+                                LibrarySourceMode.SIMKL -> stringResource(Res.string.library_simkl_title)
+                                LibrarySourceMode.MDBLIST -> stringResource(Res.string.library_mdblist_title)
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(end = if (onDownloadsClick != null) 144.dp else 0.dp),
+                    )
+                    if (onDownloadsClick != null) {
+                        Box(
+                            Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 4.dp),
+                        ) {
+                            LibraryDownloadsButton(onClick = onDownloadsClick)
                         }
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
+                    }
+                }
                 LibrarySourceSwitch(
                     selectedMode = sourceMode,
                     onModeSelected = { mode ->
@@ -477,9 +488,6 @@ fun LibraryScreen(
                                 cutoutColor = MaterialTheme.colorScheme.background,
                             )
                         }
-                    }
-                    if (onDownloadsClick != null) {
-                        LibraryDownloadsButton(onClick = onDownloadsClick)
                     }
                 }
                 Spacer(modifier = Modifier.height(6.dp))

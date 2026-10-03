@@ -62,5 +62,6 @@ data class LiveTvUiState(
             stalkerSettings.isConfigured || xtreamSettings.isConfigured
 
     val showInNavigation: Boolean
-        get() = hasPlaylist && isNavigationEnabled
+        // This fork keeps IPTV as a permanent fifth navigation destination.
+        get() = true
 }
