@@ -1,6 +1,13 @@
 name: Build Test IPA
 
 on:
+  push:
+    branches: [enhanced]
+    paths:
+      - 'composeApp/**'
+      - 'iosApp/**'
+      - 'scripts/**'
+      - '.github/workflows/ios-test-build.yml'
   workflow_dispatch:
     inputs:
       configuration:
@@ -21,13 +28,13 @@ concurrency:
 
 jobs:
   build:
-    name: Build unsigned full ${{ inputs.configuration }} IPA
+    name: Build unsigned full ${{ inputs.configuration || 'Release' }} IPA
     runs-on: macos-26
-    timeout-minutes: ${{ inputs.configuration == 'Release' && 120 || 30 }}
+    timeout-minutes: ${{ inputs.configuration != 'Debug' && 120 || 30 }}
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
       GRADLE_OPTS: -Dfile.encoding=UTF-8
-      IOS_CONFIGURATION: ${{ inputs.configuration }}
+      IOS_CONFIGURATION: ${{ inputs.configuration || 'Release' }}
       KOTLIN_DAEMON_JVMARGS: -Xmx2048M
       NUVIO_GRADLE_JVMARGS: -Xmx4608M -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=768M
       NUVIO_KOTLIN_NATIVE_JVMARGS: -Xmx4608M
@@ -62,22 +69,25 @@ jobs:
 
       - name: Configure runtime properties
         run: |
-          # Gradle declares local.properties as an optional @InputFile, but Gradle 9
-          # still validates a configured RegularFileProperty before task execution.
-          # Forks do not inherit repository secrets, so always create the file.
-          : > local.properties
           if [[ -n "${RELEASE_PROPERTIES_BASE64}" ]]; then
             printf '%s' "${RELEASE_PROPERTIES_BASE64}" | base64 --decode > local.properties
             sed -i '' -E '/^[[:space:]]*(sdk\.dir|NUVIO_RELEASE_STORE_FILE)[[:space:]]*=/d' local.properties
-          fi
-          if [[ -n "${CONTRIBUTIONS_URL}" ]]; then
-            printf 'CONTRIBUTIONS_URL=%s\n' "${CONTRIBUTIONS_URL}" >> local.properties
           fi
 
       - name: Prepare iOS dependencies
         run: ./scripts/prepare-ios-dependencies.sh
 
-      - name: Build unsigned full ${{ inputs.configuration }} IPA
+      - name: Test runtime config generation without local.properties
+        run: |
+          if [[ -f local.properties ]]; then
+            mv local.properties local.properties.ci-backup
+            trap 'mv local.properties.ci-backup local.properties' EXIT
+          fi
+          ./gradlew :composeApp:generateRuntimeConfigs --stacktrace
+          test ! -e local.properties
+          test -f composeApp/build/generated/runtime-config/kotlin/com/nuvio/app/features/tmdb/TmdbConfig.kt
+
+      - name: Build unsigned full ${{ inputs.configuration || 'Release' }} IPA
         run: |
           (
             while sleep 60; do
@@ -115,7 +125,7 @@ jobs:
       - name: Upload test IPA
         uses: actions/upload-artifact@v7
         with:
-          name: nuvio-test-${{ inputs.configuration }}-ipa-${{ github.sha }}
+          name: nuvio-test-${{ inputs.configuration || 'Release' }}-ipa-${{ github.sha }}
           path: build/ios-ipa/*.ipa
           if-no-files-found: error
           retention-days: 7
