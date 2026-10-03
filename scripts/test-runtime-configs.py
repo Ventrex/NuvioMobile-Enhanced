@@ -53,7 +53,7 @@ def main():
     original = LOCAL.read_bytes() if LOCAL.exists() else None
     values = {key: "ci-" + key.lower() for key in CONFIGS}
     # Quotes, backslashes, interpolation and newlines must produce valid Kotlin literals.
-    values["TRAKT_CLIENT_SECRET"] = 'quote" slash\\ dollar$ newline\n'
+    values["TRAKT_CLIENT_SECRET"] = 'quote" slash\\ dollar$ newline\nend'
     environment = dict(os.environ, **values)
     try:
         LOCAL.unlink(missing_ok=True)
