@@ -7,11 +7,9 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -70,35 +68,33 @@ internal fun LibraryDownloadsButton(onClick: () -> Unit) {
 
     TextButton(
         onClick = onClick,
-        modifier = Modifier.semantics { stateDescription = statusDescription },
+        modifier = Modifier.width(144.dp).semantics { stateDescription = statusDescription },
     ) {
-        BadgedBox(
-            badge = {
-                when {
-                    activeCount > 0 -> Badge {
-                        Text(if (activeCount > 99) "99+" else activeCount.toString())
-                    }
-                    hasFailed -> Badge { Text("!") }
-                    hasUnseenCompleted -> Badge()
-                }
-            },
-        ) {
-            when {
-                hasDownloading -> FlowingDownloadIcon()
-                hasUnseenCompleted -> DownloadIcon(
-                    modifier = Modifier.gradientMask(MaterialTheme.themePalette.accentBrush()),
-                    tint = Color.White,
-                )
-                else -> DownloadIcon(tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+        when {
+            hasDownloading -> FlowingDownloadIcon()
+            hasUnseenCompleted -> DownloadIcon(
+                modifier = Modifier.gradientMask(MaterialTheme.themePalette.accentBrush()),
+                tint = Color.White,
+            )
+            else -> DownloadIcon(tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(8.dp))
         Text(
             text = stringResource(Res.string.compose_settings_root_downloads_title),
-            modifier = Modifier.widthIn(max = 84.dp),
+            modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        if (activeCount > 0 || hasFailed || hasUnseenCompleted) {
+            Spacer(Modifier.width(6.dp))
+            when {
+                activeCount > 0 -> Badge {
+                    Text(if (activeCount > 99) "99+" else activeCount.toString())
+                }
+                hasFailed -> Badge { Text("!") }
+                hasUnseenCompleted -> Badge()
+            }
+        }
     }
 }
 
