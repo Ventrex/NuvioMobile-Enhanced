@@ -113,9 +113,9 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |package com.nuvio.app.features.trakt
                 |
                 |object TraktConfig {
-                |    const val CLIENT_ID = "${config("TRAKT_CLIENT_ID")}" 
-                |    const val CLIENT_SECRET = "${config("TRAKT_CLIENT_SECRET")}" 
-                |    const val REDIRECT_URI = "${config("TRAKT_REDIRECT_URI")}" 
+                |    const val CLIENT_ID = "${config("TRAKT_CLIENT_ID")}"
+                |    const val CLIENT_SECRET = "${config("TRAKT_CLIENT_SECRET")}"
+                |    const val REDIRECT_URI = "${config("TRAKT_REDIRECT_URI")}"
                 |}
                 """.trimMargin()
             )
@@ -156,7 +156,7 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |package com.nuvio.app.features.player.skip
                 |
                 |object IntroDbConfig {
-                |    const val URL = "${config("INTRODB_API_URL")}" 
+                |    const val URL = "${config("INTRODB_API_URL")}"
                 |}
                 """.trimMargin()
             )
@@ -211,10 +211,10 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |package com.nuvio.app.features.settings
                 |
                 |object CommunityConfig {
-                |    const val CONTRIBUTIONS_URL = "${config("CONTRIBUTIONS_URL")}" 
+                |    const val CONTRIBUTIONS_URL = "${config("CONTRIBUTIONS_URL")}"
                 |    const val SUPPORTERS_WALL_URL = "${config("SUPPORTERS_WALL_URL")}"
-                |    const val DONATIONS_BASE_URL = "${config("DONATIONS_BASE_URL")}" 
-                |    const val DONATIONS_DONATE_URL = "${config("DONATIONS_DONATE_URL")}" 
+                |    const val DONATIONS_BASE_URL = "${config("DONATIONS_BASE_URL")}"
+                |    const val DONATIONS_DONATE_URL = "${config("DONATIONS_DONATE_URL")}"
                 |}
                 """.trimMargin()
             )
@@ -358,11 +358,14 @@ val generateRuntimeConfigs = tasks.register<GenerateRuntimeConfigsTask>("generat
     sentryDsn.set(runtimeConfigValue("SENTRY_DSN"))
     tmdbApiKey.set(runtimeConfigValue("TMDB_API_KEY"))
     sentryEnvironment.set(
-        when {
-            requestedGradleTasks.any { "benchmark" in it } -> "benchmark"
-            requestedGradleTasks.any { "debug" in it } -> "debug"
-            else -> "production"
-        }
+        runtimeConfigValue(
+            "SENTRY_ENVIRONMENT",
+            when {
+                requestedGradleTasks.any { "benchmark" in it } -> "benchmark"
+                requestedGradleTasks.any { "debug" in it } -> "debug"
+                else -> "production"
+            },
+        )
     )
 }
 
@@ -386,7 +389,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     val iosTargets = listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -459,7 +462,7 @@ kotlin {
             }
         }
     }
-    
+
     sourceSets {
         val commonMain by getting {
             kotlin.srcDir(generatedRuntimeConfigDir)

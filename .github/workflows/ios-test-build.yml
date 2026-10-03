@@ -77,15 +77,8 @@ jobs:
       - name: Prepare iOS dependencies
         run: ./scripts/prepare-ios-dependencies.sh
 
-      - name: Test runtime config generation without local.properties
-        run: |
-          if [[ -f local.properties ]]; then
-            mv local.properties local.properties.ci-backup
-            trap 'mv local.properties.ci-backup local.properties' EXIT
-          fi
-          ./gradlew :composeApp:generateRuntimeConfigs --stacktrace
-          test ! -e local.properties
-          test -f composeApp/build/generated/runtime-config/kotlin/com/nuvio/app/features/tmdb/TmdbConfig.kt
+      - name: Test optional runtime configuration and CI fallbacks
+        run: python3 scripts/test-runtime-configs.py
 
       - name: Build unsigned full ${{ inputs.configuration || 'Release' }} IPA
         run: |
